@@ -110,7 +110,7 @@ private fun VymoTextFieldPreview() {
             value = "",
             onValueChange = {},
             label = "Name",
-            placeholder = "Jane Doe",
+            placeholder = "Enter name",
             modifier = Modifier.padding(16.dp),
         )
     }

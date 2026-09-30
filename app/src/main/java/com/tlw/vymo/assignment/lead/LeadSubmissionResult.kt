@@ -129,8 +129,8 @@ private fun LeadSubmissionResultPreview() {
     VymoTheme {
         LeadSubmissionResult(
             values = listOf(
-                SubmittedValue("Full name", "Jane Doe"),
-                SubmittedValue("Email", "jane@example.com"),
+                SubmittedValue("Full name", "Rahul Sharma"),
+                SubmittedValue("Email", "rahul@example.com"),
                 SubmittedValue("Lead type", "Individual"),
             ),
             modifier = Modifier.padding(16.dp),

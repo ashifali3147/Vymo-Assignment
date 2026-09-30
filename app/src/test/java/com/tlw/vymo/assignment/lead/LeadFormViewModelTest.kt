@@ -12,8 +12,8 @@ class LeadFormViewModelTest {
     private val state get() = viewModel.state.value
 
     private fun fillValidIndividual() {
-        viewModel.onValueChange(LeadFields.FULL_NAME, "Jane Doe")
-        viewModel.onValueChange(LeadFields.EMAIL, "jane@example.com")
+        viewModel.onValueChange(LeadFields.FULL_NAME, "Rahul Sharma")
+        viewModel.onValueChange(LeadFields.EMAIL, "rahul@example.com")
         viewModel.onValueChange(LeadFields.LEAD_TYPE, LeadTypes.INDIVIDUAL)
         viewModel.onValueChange(LeadFields.PHONE, "9876543210")
         viewModel.onValueChange(LeadFields.CONSENT, CHECKED)
@@ -21,14 +21,14 @@ class LeadFormViewModelTest {
 
     @Test
     fun `no errors are shown before the user leaves a field`() {
-        viewModel.onValueChange(LeadFields.EMAIL, "jane")
+        viewModel.onValueChange(LeadFields.EMAIL, "rahul")
 
         assertTrue(state.errors.isEmpty())
     }
 
     @Test
     fun `leaving a field shows only that field's error`() {
-        viewModel.onValueChange(LeadFields.EMAIL, "jane")
+        viewModel.onValueChange(LeadFields.EMAIL, "rahul")
         viewModel.onFieldFocusLost(LeadFields.EMAIL)
 
         assertEquals(setOf(LeadFields.EMAIL), state.errors.keys)
@@ -36,9 +36,9 @@ class LeadFormViewModelTest {
 
     @Test
     fun `fixing a touched field clears its error`() {
-        viewModel.onValueChange(LeadFields.EMAIL, "jane")
+        viewModel.onValueChange(LeadFields.EMAIL, "rahul")
         viewModel.onFieldFocusLost(LeadFields.EMAIL)
-        viewModel.onValueChange(LeadFields.EMAIL, "jane@example.com")
+        viewModel.onValueChange(LeadFields.EMAIL, "rahul@example.com")
 
         assertNull(state.errors[LeadFields.EMAIL])
     }
@@ -60,8 +60,8 @@ class LeadFormViewModelTest {
         assertTrue(state.errors.isEmpty())
         assertEquals(
             listOf(
-                SubmittedValue("Full name", "Jane Doe"),
-                SubmittedValue("Email", "jane@example.com"),
+                SubmittedValue("Full name", "Rahul Sharma"),
+                SubmittedValue("Email", "rahul@example.com"),
                 SubmittedValue("Lead type", "Individual"),
                 SubmittedValue("Phone", "9876543210"),
                 SubmittedValue("Notes", "—"),
@@ -85,7 +85,7 @@ class LeadFormViewModelTest {
     fun `hidden company name is left out of the submission`() {
         fillValidIndividual()
         viewModel.onValueChange(LeadFields.LEAD_TYPE, LeadTypes.COMPANY)
-        viewModel.onValueChange(LeadFields.COMPANY_NAME, "Acme")
+        viewModel.onValueChange(LeadFields.COMPANY_NAME, "Sharma Traders")
         viewModel.onValueChange(LeadFields.LEAD_TYPE, LeadTypes.INDIVIDUAL)
 
         viewModel.onSubmit()
@@ -135,7 +135,7 @@ class LeadFormViewModelTest {
         viewModel.onFieldFocusLost(LeadFields.EMAIL)
         viewModel.onStartNewLead()
 
-        viewModel.onValueChange(LeadFields.EMAIL, "jane")
+        viewModel.onValueChange(LeadFields.EMAIL, "rahul")
 
         assertTrue(state.errors.isEmpty())
     }
