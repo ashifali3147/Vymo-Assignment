@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +64,14 @@ fun LeadFormScreen(
 ) {
     val spacing = VymoTheme.spacing
     val focusManager = LocalFocusManager.current
+    val scrollState = rememberScrollState()
+
+    // Bring the submitted values into view once they appear below the form.
+    LaunchedEffect(state.submission) {
+        if (state.submission != null) {
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -85,7 +94,7 @@ fun LeadFormScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .consumeWindowInsets(innerPadding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
                 .padding(horizontal = spacing.lg, vertical = spacing.xl),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -103,6 +112,7 @@ fun LeadFormScreen(
                     onValueChange = onValueChange,
                     onFieldFocusLost = onFieldFocusLost,
                 )
+                state.submission?.let { LeadSubmissionSummary(values = it) }
             }
         }
     }
