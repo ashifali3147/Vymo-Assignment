@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.tlw.vymo.assignment.designsystem.theme.VymoTheme
+import com.tlw.vymo.assignment.lead.LeadFormRoute
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -12,6 +13,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             VymoTheme {
+                LeadFormRoute()
             }
         }
     }

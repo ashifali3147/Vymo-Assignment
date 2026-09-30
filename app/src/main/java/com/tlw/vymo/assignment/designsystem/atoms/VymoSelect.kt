@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -59,6 +60,7 @@ fun VymoSelect(
     val colors = VymoTheme.colors
     val shapes = VymoTheme.shapes
     val density = LocalDensity.current
+    val focusManager = LocalFocusManager.current
     var expanded by remember { mutableStateOf(false) }
     var anchorWidthPx by remember { mutableStateOf(0) }
 
@@ -85,7 +87,11 @@ fun VymoSelect(
                 .background(if (enabled) colors.surface else colors.disabled, shape)
                 .border(borderWidth, borderColor, shape)
                 .clip(shape)
-                .clickable(enabled = enabled, role = Role.DropdownList) { expanded = true }
+                .clickable(enabled = enabled, role = Role.DropdownList) {
+                    // Opening the menu takes focus away from whichever text field had it.
+                    focusManager.clearFocus()
+                    expanded = true
+                }
                 .semantics {
                     contentDescription = label
                     stateDescription = selected?.label ?: placeholder.orEmpty()
@@ -113,6 +119,7 @@ fun VymoSelect(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = ::dismiss,
+            containerColor = colors.surface,
             modifier = Modifier.width(with(density) { anchorWidthPx.toDp() }),
         ) {
             options.forEach { option ->
