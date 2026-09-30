@@ -103,4 +103,40 @@ class LeadFormViewModelTest {
 
         assertNull(state.submission)
     }
+
+    @Test
+    fun `edit closes the result and keeps the values`() {
+        fillValidIndividual()
+        viewModel.onSubmit()
+        val submittedValues = state.values
+
+        viewModel.onEditSubmission()
+
+        assertNull(state.submission)
+        assertEquals(submittedValues, state.values)
+    }
+
+    @Test
+    fun `new lead clears values and errors`() {
+        fillValidIndividual()
+        viewModel.onFieldFocusLost(LeadFields.FULL_NAME)
+        viewModel.onSubmit()
+
+        viewModel.onStartNewLead()
+
+        assertTrue(state.values.isEmpty())
+        assertTrue(state.errors.isEmpty())
+        assertEquals(false, state.submitAttempted)
+        assertNull(state.submission)
+    }
+
+    @Test
+    fun `fields left before a new lead don't show errors afterwards`() {
+        viewModel.onFieldFocusLost(LeadFields.EMAIL)
+        viewModel.onStartNewLead()
+
+        viewModel.onValueChange(LeadFields.EMAIL, "jane")
+
+        assertTrue(state.errors.isEmpty())
+    }
 }

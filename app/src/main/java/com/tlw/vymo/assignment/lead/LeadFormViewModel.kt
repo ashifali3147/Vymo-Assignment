@@ -58,6 +58,17 @@ class LeadFormViewModel(
         }
     }
 
+    /** Closes the submitted view and goes back to the filled form. */
+    fun onEditSubmission() {
+        _state.update { it.copy(submission = null) }
+    }
+
+    /** Clears everything for the next lead. */
+    fun onStartNewLead() {
+        touched = emptySet()
+        _state.value = LeadFormUiState(fields = config)
+    }
+
     // A field shows its error once the user has left it, or after any submit attempt.
     private fun LeadFormUiState.withVisibleErrors(): LeadFormUiState {
         val all = validateForm(config, values)
