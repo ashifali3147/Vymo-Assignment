@@ -91,7 +91,7 @@ private fun VymoFormFieldPreview() {
                 VymoTextField(value = "", onValueChange = {}, label = "Name")
             }
             VymoFormField(label = "Email", required = true, error = "Enter a valid email") {
-                VymoTextField(value = "jane@", onValueChange = {}, label = "Email", isError = true)
+                VymoTextField(value = "rahul@", onValueChange = {}, label = "Email", isError = true)
             }
         }
     }

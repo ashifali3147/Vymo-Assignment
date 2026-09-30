@@ -11,8 +11,8 @@ import org.junit.Test
 class LeadFormValidatorTest {
 
     private val validIndividual: FormValues = mapOf(
-        LeadFields.FULL_NAME to "Jane Doe",
-        LeadFields.EMAIL to "jane@example.com",
+        LeadFields.FULL_NAME to "Rahul Sharma",
+        LeadFields.EMAIL to "rahul@example.com",
         LeadFields.LEAD_TYPE to LeadTypes.INDIVIDUAL,
         LeadFields.PHONE to "9876543210",
         LeadFields.CONSENT to CHECKED,
@@ -50,7 +50,7 @@ class LeadFormValidatorTest {
 
     @Test
     fun `malformed email is rejected`() {
-        listOf("jane", "jane@", "jane@example", "@example.com", "jane doe@example.com").forEach {
+        listOf("rahul", "rahul@", "rahul@example", "@example.com", "rahul sharma@example.com").forEach {
             val errors = errorsFor(validIndividual + (LeadFields.EMAIL to it))
             assertEquals("for '$it'", "Enter a valid email address", errors[LeadFields.EMAIL])
         }
@@ -58,7 +58,7 @@ class LeadFormValidatorTest {
 
     @Test
     fun `email with surrounding spaces is accepted`() {
-        val errors = errorsFor(validIndividual + (LeadFields.EMAIL to " jane@example.com "))
+        val errors = errorsFor(validIndividual + (LeadFields.EMAIL to " rahul@example.com "))
 
         assertNull(errors[LeadFields.EMAIL])
     }
@@ -87,7 +87,7 @@ class LeadFormValidatorTest {
     fun `company lead with a company name is valid`() {
         val values = validIndividual +
             (LeadFields.LEAD_TYPE to LeadTypes.COMPANY) +
-            (LeadFields.COMPANY_NAME to "Acme")
+            (LeadFields.COMPANY_NAME to "Sharma Traders")
 
         assertTrue(errorsFor(values).isEmpty())
     }
