@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Vymo Assignment</string>
+
+    <string name="lead_form_title">New lead</string>
+    <string name="lead_form_subtitle">Fields marked * are required.</string>
+    <string name="lead_form_submit">Submit lead</string>
+    <plurals name="lead_form_error_count">
+        <item quantity="one">Fix %d field to submit</item>
+        <item quantity="other">Fix %d fields to submit</item>
+    </plurals>
 </resources>
