@@ -1,7 +1,9 @@
 package com.tlw.vymo.assignment.lead
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +24,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,8 @@ fun LeadFormRoute(viewModel: LeadFormViewModel = viewModel()) {
         onValueChange = viewModel::onValueChange,
         onFieldFocusLost = viewModel::onFieldFocusLost,
         onSubmit = viewModel::onSubmit,
+        onEditSubmission = viewModel::onEditSubmission,
+        onStartNewLead = viewModel::onStartNewLead,
     )
 }
 
@@ -60,31 +63,44 @@ fun LeadFormScreen(
     onValueChange: (String, String) -> Unit,
     onFieldFocusLost: (String) -> Unit,
     onSubmit: () -> Unit,
+    onEditSubmission: () -> Unit,
+    onStartNewLead: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val spacing = VymoTheme.spacing
     val focusManager = LocalFocusManager.current
-    val scrollState = rememberScrollState()
+    val submission = state.submission
+    val showResultPage = submission != null
 
-    // Bring the submitted values into view once they appear below the form.
-    LaunchedEffect(state.submission) {
-        if (state.submission != null) {
-            scrollState.animateScrollTo(scrollState.maxValue)
-        }
-    }
+    // Separate scroll states so going back to the form keeps its position.
+    val formScrollState = rememberScrollState()
+    val resultScrollState = rememberScrollState()
+    val scrollState = if (showResultPage) resultScrollState else formScrollState
+
+    BackHandler(enabled = showResultPage, onBack = onEditSubmission)
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = VymoTheme.colors.background,
         contentWindowInsets = WindowInsets.safeDrawing,
         bottomBar = {
-            SubmitBar(
-                errorCount = if (state.submitAttempted) state.errors.size else 0,
-                onSubmit = {
-                    focusManager.clearFocus()
-                    onSubmit()
-                },
-            )
+            if (showResultPage) {
+                BottomBar {
+                    LeadSubmissionActions(
+                        onEdit = onEditSubmission,
+                        onNewLead = onStartNewLead,
+                        modifier = Modifier.widthIn(max = VymoBreakpoints.MaxContentWidth),
+                    )
+                }
+            } else {
+                SubmitBar(
+                    errorCount = if (state.submitAttempted) state.errors.size else 0,
+                    onSubmit = {
+                        focusManager.clearFocus()
+                        onSubmit()
+                    },
+                )
+            }
         },
     ) { innerPadding ->
         // The bottom bar grows with the keyboard, so innerPadding keeps the
@@ -104,15 +120,18 @@ fun LeadFormScreen(
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(spacing.xl),
             ) {
-                Header()
-                VymoForm(
-                    fields = state.fields,
-                    values = state.values,
-                    errors = state.errors,
-                    onValueChange = onValueChange,
-                    onFieldFocusLost = onFieldFocusLost,
-                )
-                state.submission?.let { LeadSubmissionSummary(values = it) }
+                if (showResultPage) {
+                    LeadSubmissionResult(values = submission)
+                } else {
+                    Header()
+                    VymoForm(
+                        fields = state.fields,
+                        values = state.values,
+                        errors = state.errors,
+                        onValueChange = onValueChange,
+                        onFieldFocusLost = onFieldFocusLost,
+                    )
+                }
             }
         }
     }
@@ -136,7 +155,7 @@ private fun Header() {
 }
 
 @Composable
-private fun SubmitBar(errorCount: Int, onSubmit: () -> Unit) {
+private fun BottomBar(content: @Composable BoxWithConstraintsScope.() -> Unit) {
     val spacing = VymoTheme.spacing
 
     Surface(color = VymoTheme.colors.surface) {
@@ -152,55 +171,63 @@ private fun SubmitBar(errorCount: Int, onSubmit: () -> Unit) {
                     )
                     .padding(horizontal = spacing.lg, vertical = spacing.md),
                 contentAlignment = Alignment.Center,
-            ) {
-                val barModifier = Modifier
-                    .widthIn(max = VymoBreakpoints.MaxContentWidth)
-                    .fillMaxWidth()
-                val errorText: @Composable (Modifier) -> Unit = { textModifier ->
-                    if (errorCount > 0) {
-                        Text(
-                            text = pluralStringResource(
-                                R.plurals.lead_form_error_count,
-                                errorCount,
-                                errorCount,
-                            ),
-                            style = VymoTheme.typography.caption,
-                            color = VymoTheme.colors.error,
-                            modifier = textModifier,
-                        )
-                    }
-                }
-                val label = stringResource(R.string.lead_form_submit)
+                content = content,
+            )
+        }
+    }
+}
 
-                // On wide screens height is usually the scarce side (landscape),
-                // so the message sits beside the button instead of above it.
-                if (maxWidth >= VymoBreakpoints.TwoColumnMinWidth) {
-                    Row(
-                        modifier = barModifier,
-                        horizontalArrangement = Arrangement.spacedBy(spacing.lg),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        errorText(Modifier.weight(1f))
-                        if (errorCount == 0) Spacer(Modifier.weight(1f))
-                        VymoButton(
-                            label = label,
-                            onClick = onSubmit,
-                            modifier = Modifier.widthIn(min = SubmitButtonMinWidth),
-                        )
-                    }
-                } else {
-                    Column(
-                        modifier = barModifier,
-                        verticalArrangement = Arrangement.spacedBy(spacing.sm),
-                    ) {
-                        errorText(Modifier)
-                        VymoButton(
-                            label = label,
-                            onClick = onSubmit,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                }
+@Composable
+private fun SubmitBar(errorCount: Int, onSubmit: () -> Unit) {
+    val spacing = VymoTheme.spacing
+
+    BottomBar {
+        val barModifier = Modifier
+            .widthIn(max = VymoBreakpoints.MaxContentWidth)
+            .fillMaxWidth()
+        val errorText: @Composable (Modifier) -> Unit = { textModifier ->
+            if (errorCount > 0) {
+                Text(
+                    text = pluralStringResource(
+                        R.plurals.lead_form_error_count,
+                        errorCount,
+                        errorCount,
+                    ),
+                    style = VymoTheme.typography.caption,
+                    color = VymoTheme.colors.error,
+                    modifier = textModifier,
+                )
+            }
+        }
+        val label = stringResource(R.string.lead_form_submit)
+
+        // On wide screens height is usually the scarce side (landscape),
+        // so the message sits beside the button instead of above it.
+        if (maxWidth >= VymoBreakpoints.TwoColumnMinWidth) {
+            Row(
+                modifier = barModifier,
+                horizontalArrangement = Arrangement.spacedBy(spacing.lg),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                errorText(Modifier.weight(1f))
+                if (errorCount == 0) Spacer(Modifier.weight(1f))
+                VymoButton(
+                    label = label,
+                    onClick = onSubmit,
+                    modifier = Modifier.widthIn(min = SubmitButtonMinWidth),
+                )
+            }
+        } else {
+            Column(
+                modifier = barModifier,
+                verticalArrangement = Arrangement.spacedBy(spacing.sm),
+            ) {
+                errorText(Modifier)
+                VymoButton(
+                    label = label,
+                    onClick = onSubmit,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }
@@ -217,6 +244,8 @@ private fun LeadFormCompactPreview() {
             onValueChange = { _, _ -> },
             onFieldFocusLost = {},
             onSubmit = {},
+            onEditSubmission = {},
+            onStartNewLead = {},
         )
     }
 }
@@ -230,6 +259,8 @@ private fun LeadFormExpandedPreview() {
             onValueChange = { _, _ -> },
             onFieldFocusLost = {},
             onSubmit = {},
+            onEditSubmission = {},
+            onStartNewLead = {},
         )
     }
 }
